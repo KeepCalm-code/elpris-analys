@@ -2,9 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
+from datetime import datetime
 
 st.set_page_config(page_title="Elprisanalys", layout="wide")
-st.title("🔌 Anderssons Solenergi Onsala")
+st.title("🔌 Elprisanalys och Solenergioptimering")
 st.markdown("Simulera och jämför elpriser från spotmarknaden med din egen solenergi.")
 
 # Inmatning av användardata
@@ -22,9 +24,21 @@ for t in timmar:
     förbrukning.append(f)
     solproduktion.append(s)
 
-# Simulerade spotpriser per timme
-np.random.seed(42)
-spotpris = np.random.uniform(20, 120, size=24)  # i öre/kWh
+# Hämta realtidsdata från elprisetjustnu.se
+@st.cache_data
+def hamta_spotpriser():
+    url = "https://www.elprisetjustnu.se/api/v1/prices/2024/6-9_SE3.json"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        priser = [float(item["SEK_per_kWh"])*100 for item in data]
+        timmar = [datetime.fromisoformat(item["time_start"]).hour for item in data]
+        return priser, timmar
+    except:
+        st.warning("Kunde inte hämta realtidspriser. Simulerar istället.")
+        return list(np.random.uniform(20, 120, size=24)), list(range(24))
+
+spotpris, timmar = hamta_spotpriser()
 
 # Kostnadsberäkning per timme
 kostnad_per_timme = []
