@@ -32,8 +32,13 @@ spotpris = np.array(spotpris)
 förbrukning = np.array(förbrukning)
 solproduktion = np.array(solproduktion)
 
-# Beräkning av kostnad per timme
-kostnad_per_timme = (spotpris * förbrukning) - (solproduktion * 80)
+# Kontrollera om alla array längder är lika
+if len(spotpris) == len(förbrukning) == len(solproduktion):
+    # Beräkning av kostnad per timme
+    kostnad_per_timme = (spotpris * förbrukning) - (solproduktion * 80)
+else:
+    st.error("Längderna på spotpris, förbrukning och solproduktion matchar inte!")
+    kostnad_per_timme = np.array([0] * len(spotpris))  # Skapa en dummy array för att förhindra kraschen
 
 
 # Skapa DataFrame
