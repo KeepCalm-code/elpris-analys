@@ -28,7 +28,7 @@ def hämta_spotpriser(elområde):
     except Exception as e:
         st.error(f"🚨 Kunde inte hämta elpriser för {elområde}: {e}")
         return [0]*24, list(range(24))
-spotpris, timmar = hämta_spotpriser()
+spotpris, timmar = hämta_spotpriser(elområde)
 
 # Inmatning av användardata
 st.sidebar.header("🔧 Inmatning")
