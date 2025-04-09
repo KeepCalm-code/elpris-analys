@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Elprisanalys", layout="wide")
-st.title("🔌 Elprisanalys och Solenergioptimering")
+st.title("🔌 Anderssons Solenergi Onsala")
 st.markdown("Simulera och jämför elpriser från spotmarknaden med din egen solenergi.")
 
 # Inmatning av användardata
