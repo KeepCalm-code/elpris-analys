@@ -42,24 +42,21 @@ else:
 
 
 # Skapa DataFrame
-    # Kontrollera om alla variabler har samma längd
+# Kontrollera om alla variabler har samma längd
 if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
     df = pd.DataFrame({
         "Timme": timmar,
-        "Spotpris": spotpris,
-        "Förbrukning": förbrukning,
-        "Solproduktion": solproduktion,
-        "Kostnad per timme": kostnad_per_timme
+        "Spotpris (öre/kWh)": spotpris,
+        "Förbrukning (kWh)": förbrukning,
+        "Solproduktion (kWh)": solproduktion,
+        "Beräknad kostnad (öre)": kostnad_per_timme
     })
 else:
     st.error("Längderna på listorna matchar inte!")
-    df = pd.DataFrame()
-
-    "Timme": timmar,
-    "Spotpris (öre/kWh)": spotpris,
-    "Förbrukning (kWh)": förbrukning,
-    "Solproduktion (kWh)": solproduktion,
-    "Beräknad kostnad (öre)": kostnad_per_timme
+    df = pd.DataFrame(columns=[
+        "Timme", "Spotpris (öre/kWh)", "Förbrukning (kWh)",
+        "Solproduktion (kWh)", "Beräknad kostnad (öre)"
+    ])
 
 # Layout
 col1, col2 = st.columns(2)
@@ -88,7 +85,12 @@ with col2:
 
 # Visar data
 st.subheader("📄 Dataöversikt")
-st.dataframe(df.style.format({"Spotpris (öre/kWh)": "{:.0f}", "Förbrukning (kWh)": "{:.2f}", "Solproduktion (kWh)": "{:.1f}", "Beräknad kostnad (öre)": "{:.0f}"}))
+st.dataframe(df.style.format({
+    "Spotpris (öre/kWh)": "{:.0f}",
+    "Förbrukning (kWh)": "{:.2f}",
+    "Solproduktion (kWh)": "{:.1f}",
+    "Beräknad kostnad (öre)": "{:.0f}"
+}))
 
 st.markdown("---")
 st.markdown(f"💡 **Simulerad effektavgift:** {effektavgift:.2f} kr (baserat på maxförbrukning)")
