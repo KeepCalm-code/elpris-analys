@@ -60,7 +60,6 @@ else:
     "Förbrukning (kWh)": förbrukning,
     "Solproduktion (kWh)": solproduktion,
     "Beräknad kostnad (öre)": kostnad_per_timme
-})
 
 # Layout
 col1, col2 = st.columns(2)
