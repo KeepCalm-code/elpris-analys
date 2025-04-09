@@ -9,14 +9,25 @@ st.set_page_config(page_title="Elprisanalys", layout="wide")
 st.title("🔌 Elprisanalys och Solenergioptimering")
 st.markdown("Simulera och jämför elpriser från spotmarknaden med din egen solenergi.")
 
+# Hämta realtidsdata från elprisetjustnu.se
+@st.cache_data(ttl=3600)
+def hämta_spotpriser():
+    url = "https://www.elprisetjustnu.se/api/v1/prices/2024/SE3.json"
+    response = requests.get(url)
+    data = response.json()
+    priser = [entry["SEK_per_kWh"] * 100 for entry in data if "SEK_per_kWh" in entry]  # omvandla till öre
+    timmar = [datetime.fromisoformat(entry["time_start"]).hour for entry in data]
+    return priser[:24], timmar[:24]
+
+spotpris, timmar = hämta_spotpriser()
+
 # Inmatning av användardata
 st.sidebar.header("🔧 Inmatning")
 fast_avgift = st.sidebar.number_input("Fast avgift (öre/kWh)", min_value=0, value=30)
 
-# Skapa tomma listor för 24 timmar
+# Skapa tomma listor
 förbrukning = []
 solproduktion = []
-timmar = list(range(24))
 
 for t in timmar:
     f = st.sidebar.number_input(f"Förbrukning kl {t}:00 (kWh)", min_value=0.0, value=0.5, step=0.1, key=f"f_{t}")
@@ -24,43 +35,22 @@ for t in timmar:
     förbrukning.append(f)
     solproduktion.append(s)
 
-# Hämta realtidsdata från elprisetjustnu.se
-@st.cache_data
-def hamta_spotpriser():
-    url = "https://www.elprisetjustnu.se/api/v1/prices/2024/6-9_SE3.json"
-    try:
-        response = requests.get(url)
-        data = response.json()
-        priser = [float(item["SEK_per_kWh"])*100 for item in data]
-        timmar = [datetime.fromisoformat(item["time_start"]).hour for item in data]
-        return priser, timmar
-    except:
-        st.warning("Kunde inte hämta realtidspriser. Simulerar istället.")
-        return list(np.random.uniform(20, 120, size=24)), list(range(24))
-
-spotpris, timmar = hamta_spotpriser()
-
-# Kostnadsberäkning per timme
+# Kostnadsberäkning
 kostnad_per_timme = []
 for i in range(24):
     kostnad = (spotpris[i] + fast_avgift) * förbrukning[i] - solproduktion[i] * 80
     kostnad_per_timme.append(kostnad)
 
-# Simulerad effektavgift (kan anpassas)
-effektavgift = max(förbrukning) * 100
+effektavgift = max(förbrukning) * 100  # Simulerad effektavgift
 
 # Skapa DataFrame
-if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
-    df = pd.DataFrame({
-        "Timme": timmar,
-        "Spotpris (öre/kWh)": spotpris,
-        "Förbrukning (kWh)": förbrukning,
-        "Solproduktion (kWh)": solproduktion,
-        "Beräknad kostnad (öre)": kostnad_per_timme
-    })
-else:
-    st.error("Längderna på listorna matchar inte!")
-    df = pd.DataFrame()
+df = pd.DataFrame({
+    "Timme": timmar,
+    "Spotpris (öre/kWh)": spotpris,
+    "Förbrukning (kWh)": förbrukning,
+    "Solproduktion (kWh)": solproduktion,
+    "Beräknad kostnad (öre)": kostnad_per_timme
+})
 
 # Layout
 col1, col2 = st.columns(2)
