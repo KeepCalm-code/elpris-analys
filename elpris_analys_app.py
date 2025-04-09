@@ -43,17 +43,17 @@ else:
 
 # Skapa DataFrame
     # Kontrollera om alla variabler har samma längd
-if len(spotpris) == len(förbrukning) == len(solproduktion):
-    # Skapa DataFrame om längderna är lika
+if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
     df = pd.DataFrame({
-        'Spotpris': spotpris,
-        'Förbrukning': förbrukning,
-        'Solproduktion': solproduktion,
-        'Kostnad per timme': kostnad_per_timme
+        "Timme": timmar,
+        "Spotpris": spotpris,
+        "Förbrukning": förbrukning,
+        "Solproduktion": solproduktion,
+        "Kostnad per timme": kostnad_per_timme
     })
 else:
-    st.error("Längderna på spotpris, förbrukning och solproduktion matchar inte!")
-    df = pd.DataFrame()  # Skapa en tom DataFrame för att förhindra kraschen
+    st.error("Längderna på listorna matchar inte!")
+    df = pd.DataFrame()
 
     "Timme": timmar,
     "Spotpris (öre/kWh)": spotpris,
