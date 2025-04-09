@@ -20,6 +20,29 @@ for t in timmar:
     s = st.sidebar.number_input(f"Solproduktion kl {t}:00 (kWh)", min_value=0.0, value=0.0, step=0.1, key=f"s_{t}")
     förbrukning.append(f)
     solproduktion.append(s)
+    # Simulerade spotpriser per timme (du kan byta till API i framtiden)
+import numpy as np
+np.random.seed(42)  # för konsekventa simuleringar
+spotpris = np.random.uniform(20, 120, size=24)  # i öre/kWh
+
+# 🧮 Kostnadsberäkning per timme
+kostnad_per_timme = []
+for i in range(24):
+    kostnad = (spotpris[i] + fast_avgift) * förbrukning[i] - solproduktion[i] * 80
+    kostnad_per_timme.append(kostnad)
+
+# 💡 Simulerad effektavgift (kan ersättas med Ellevio-modell senare)
+effektavgift = max(förbrukning) * 100  # exempelvärde
+
+# ✅ Skapa DataFrame
+df = pd.DataFrame({
+    "Timme": timmar,
+    "Spotpris (öre/kWh)": spotpris,
+    "Förbrukning (kWh)": förbrukning,
+    "Solproduktion (kWh)": solproduktion,
+    "Beräknad kostnad (öre)": kostnad_per_timme
+})
+
 
 
 st.title("🔌 Anderssons Elprisanalys med Solproduktion")
