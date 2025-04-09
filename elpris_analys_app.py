@@ -5,7 +5,7 @@ import numpy as np
 
 st.set_page_config(page_title="Elprisanalys", layout="wide")
 
-st.title("🔌 Elprisanalys med Solproduktion")
+st.title("🔌 Anderssons Elprisanalys med Solproduktion")
 
 # Välj elnätsbolag
 nätbolag = st.selectbox("Välj elnätsbolag", ["Fortum", "Ellevio"])
