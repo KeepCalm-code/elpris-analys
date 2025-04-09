@@ -23,7 +23,14 @@ förbrukning = np.random.uniform(0.5, 2.0, size=24)
 solproduktion = [0]*6 + list(np.random.uniform(0.2, 1.5, size=10)) + [0]*8
 
 # Kostnadsberäkning
+# Konvertera alla listor till float arrays för att undvika datatypfel
+spotpris = np.array(spotpris, dtype=float)
+förbrukning = np.array(förbrukning, dtype=float)
+solproduktion = np.array(solproduktion, dtype=float)
+
+# Kostnadsberäkning
 kostnad_per_timme = ((spotpris + fast_avgift) * förbrukning) - (solproduktion * 80)
+
 
 # Kontrollera att alla listor har samma längd
 if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
