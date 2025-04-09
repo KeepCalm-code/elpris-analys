@@ -1,48 +1,31 @@
-
 import streamlit as st
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
-st.set_page_config(page_title="Elprisanalys med solenergi", layout="wide")
+st.set_page_config(page_title="Elprisanalys", layout="wide")
 
-st.title("🔋 Elprisanalys med solenergi, Ellevio & Fortum (simulering)")
-st.markdown("Simulerad analys av elpris från Nord Pool (Fortum), Ellevios effektavgift, och egen solproduktion.")
+st.title("🔌 Elprisanalys med Solproduktion")
 
-# Simulera data för ett dygn (24 timmar)
-timmar = list(range(24))
+# Välj elnätsbolag
+nätbolag = st.selectbox("Välj elnätsbolag", ["Fortum", "Ellevio"])
 
-np.random.seed(42)  # för reproducerbarhet
-
-# Simulerat spotpris från Nord Pool (öre/kWh)
-spotpris = np.random.normal(loc=80, scale=15, size=24).clip(40, 150)
-
-# Simulerad solproduktion (negativ kostnad)
-solproduktion = np.array([0]*6 + [1, 3, 5, 6, 5, 4, 2, 1] + [0]*7)
-
-# Simulerad hushållsförbrukning (kWh)
-förbrukning = np.random.normal(loc=1.5, scale=0.5, size=24).clip(0.5, 3)
-
-# Simulerad effektavgift från Ellevio (baserad på maxeffekt)
-effektavgift = max(förbrukning) * 10  # t.ex. 10 kr/kW som förenkling
-
-# Total kostnad per timme
-# Se till att alla variabler är NumPy-arrays
-spotpris = np.array(spotpris)
-förbrukning = np.array(förbrukning)
-solproduktion = np.array(solproduktion)
-
-# Kontrollera om alla array längder är lika
-if len(spotpris) == len(förbrukning) == len(solproduktion):
-    # Beräkning av kostnad per timme
-    kostnad_per_timme = (spotpris * förbrukning) - (solproduktion * 80)
+# Sätt fast avgift beroende på val
+if nätbolag == "Fortum":
+    fast_avgift = 15  # öre/kWh
 else:
-    st.error("Längderna på spotpris, förbrukning och solproduktion matchar inte!")
-    kostnad_per_timme = np.array([0] * len(spotpris))  # Skapa en dummy array för att förhindra kraschen
+    fast_avgift = 25  # öre/kWh
 
+# Simulerade data
+timmar = list(range(24))
+spotpris = np.random.uniform(30, 80, size=24)
+förbrukning = np.random.uniform(0.5, 2.0, size=24)
+solproduktion = [0]*6 + list(np.random.uniform(0.2, 1.5, size=10)) + [0]*8
 
-# Skapa DataFrame
-# Kontrollera om alla variabler har samma längd
+# Kostnadsberäkning
+kostnad_per_timme = ((spotpris + fast_avgift) * förbrukning) - (solproduktion * 80)
+
+# Kontrollera att alla listor har samma längd
 if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
     df = pd.DataFrame({
         "Timme": timmar,
@@ -53,10 +36,7 @@ if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
     })
 else:
     st.error("Längderna på listorna matchar inte!")
-    df = pd.DataFrame(columns=[
-        "Timme", "Spotpris (öre/kWh)", "Förbrukning (kWh)",
-        "Solproduktion (kWh)", "Beräknad kostnad (öre)"
-    ])
+    df = pd.DataFrame()
 
 # Layout
 col1, col2 = st.columns(2)
@@ -92,7 +72,9 @@ st.dataframe(df.style.format({
     "Beräknad kostnad (öre)": "{:.0f}"
 }))
 
+# Effektavgiftssimulering
+effektavgift = max(förbrukning) * 20  # Exempelvärde för simulering
+
 st.markdown("---")
 st.markdown(f"💡 **Simulerad effektavgift:** {effektavgift:.2f} kr (baserat på maxförbrukning)")
-
 st.caption("Denna simulering är endast för utbildnings- och planeringssyfte. Spotpriser varierar varje dag.")
