@@ -27,7 +27,14 @@ förbrukning = np.random.normal(loc=1.5, scale=0.5, size=24).clip(0.5, 3)
 effektavgift = max(förbrukning) * 10  # t.ex. 10 kr/kW som förenkling
 
 # Total kostnad per timme
+# Se till att alla variabler är NumPy-arrays
+spotpris = np.array(spotpris)
+förbrukning = np.array(förbrukning)
+solproduktion = np.array(solproduktion)
+
+# Beräkning av kostnad per timme
 kostnad_per_timme = (spotpris * förbrukning) - (solproduktion * 80)
+
 
 # Skapa DataFrame
 df = pd.DataFrame({
