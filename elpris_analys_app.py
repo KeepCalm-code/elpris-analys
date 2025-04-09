@@ -4,6 +4,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 st.set_page_config(page_title="Elprisanalys", layout="wide")
+st.sidebar.header("🔧 Ange egna data")
+
+# Fast avgift (t.ex. öre/kWh)
+fast_avgift = st.sidebar.number_input("Fast avgift (öre/kWh)", value=20.0, min_value=0.0)
+
+# Skapa interaktiva sliders för varje timme (0-23)
+timmar = list(range(24))
+förbrukning = []
+solproduktion = []
+
+st.sidebar.markdown("### ⚡ Elförbrukning och ☀️ Solproduktion per timme")
+for t in timmar:
+    f = st.sidebar.number_input(f"Förbrukning kl {t}:00 (kWh)", min_value=0.0, value=1.0, step=0.1, key=f"f_{t}")
+    s = st.sidebar.number_input(f"Solproduktion kl {t}:00 (kWh)", min_value=0.0, value=0.0, step=0.1, key=f"s_{t}")
+    förbrukning.append(f)
+    solproduktion.append(s)
+
 
 st.title("🔌 Anderssons Elprisanalys med Solproduktion")
 
