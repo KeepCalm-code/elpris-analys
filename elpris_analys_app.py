@@ -5,20 +5,29 @@ import matplotlib.pyplot as plt
 import requests
 from datetime import datetime
 
-st.set_page_config(page_title="Elprisanalys", layout="wide")
+st.set_page_config(page_title="Elprisanalys", layout="wide")# Val av elområde
+st.sidebar.subheader("📍 Välj elområde")
+elområde = st.sidebar.selectbox("Elområde", ["SE1", "SE2", "SE3", "SE4"], index=2)  # SE3 är förvalt
+
 st.title("🔌 Elprisanalys och Solenergioptimering")
 st.markdown("Simulera och jämför elpriser från spotmarknaden med din egen solenergi.")
 
 # Hämta realtidsdata från elprisetjustnu.se
 @st.cache_data(ttl=3600)
-def hämta_spotpriser():
-    url = "https://www.elprisetjustnu.se/api/v1/prices/2024/SE3.json"
-    response = requests.get(url)
-    data = response.json()
-    priser = [entry["SEK_per_kWh"] * 100 for entry in data if "SEK_per_kWh" in entry]  # omvandla till öre
-    timmar = [datetime.fromisoformat(entry["time_start"]).hour for entry in data]
-    return priser[:24], timmar[:24]
-
+@st.cache_data(ttl=3600)
+def hämta_spotpriser(elområde):
+    try:
+        idag = datetime.now()
+        url = f"https://www.elprisetjustnu.se/api/v1/prices/{idag.year}/{idag.strftime('%m')}/{idag.strftime('%d')}_{elområde}.json"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        priser = [entry["SEK_per_kWh"] * 100 for entry in data if "SEK_per_kWh" in entry]
+        timmar = [datetime.fromisoformat(entry["time_start"]).hour for entry in data]
+        return priser[:24], timmar[:24]
+    except Exception as e:
+        st.error(f"🚨 Kunde inte hämta elpriser för {elområde}: {e}")
+        return [0]*24, list(range(24))
 spotpris, timmar = hämta_spotpriser()
 
 # Inmatning av användardata
