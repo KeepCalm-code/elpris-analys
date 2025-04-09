@@ -1,78 +1,41 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Elprisanalys", layout="wide")
-st.sidebar.header("🔧 Ange egna data")
+st.title("🔌 Elprisanalys och Solenergioptimering")
+st.markdown("Simulera och jämför elpriser från spotmarknaden med din egen solenergi.")
 
-# Fast avgift (t.ex. öre/kWh)
-fast_avgift = st.sidebar.number_input("Fast avgift (öre/kWh)", value=20.0, min_value=0.0)
+# Inmatning av användardata
+st.sidebar.header("🔧 Inmatning")
+fast_avgift = st.sidebar.number_input("Fast avgift (öre/kWh)", min_value=0, value=30)
 
-# Skapa interaktiva sliders för varje timme (0-23)
-timmar = list(range(24))
+# Skapa tomma listor för 24 timmar
 förbrukning = []
 solproduktion = []
+timmar = list(range(24))
 
-st.sidebar.markdown("### ⚡ Elförbrukning och ☀️ Solproduktion per timme")
 for t in timmar:
-    f = st.sidebar.number_input(f"Förbrukning kl {t}:00 (kWh)", min_value=0.0, value=1.0, step=0.1, key=f"f_{t}")
-    s = st.sidebar.number_input(f"Solproduktion kl {t}:00 (kWh)", min_value=0.0, value=0.0, step=0.1, key=f"s_{t}")
+    f = st.sidebar.number_input(f"Förbrukning kl {t}:00 (kWh)", min_value=0.0, value=0.5, step=0.1, key=f"f_{t}")
+    s = st.sidebar.number_input(f"Solproduktion kl {t}:00 (kWh)", min_value=0.0, value=0.2, step=0.1, key=f"s_{t}")
     förbrukning.append(f)
     solproduktion.append(s)
-    # Simulerade spotpriser per timme (du kan byta till API i framtiden)
-import numpy as np
-np.random.seed(42)  # för konsekventa simuleringar
+
+# Simulerade spotpriser per timme
+np.random.seed(42)
 spotpris = np.random.uniform(20, 120, size=24)  # i öre/kWh
 
-# 🧮 Kostnadsberäkning per timme
+# Kostnadsberäkning per timme
 kostnad_per_timme = []
 for i in range(24):
     kostnad = (spotpris[i] + fast_avgift) * förbrukning[i] - solproduktion[i] * 80
     kostnad_per_timme.append(kostnad)
 
-# 💡 Simulerad effektavgift (kan ersättas med Ellevio-modell senare)
-effektavgift = max(förbrukning) * 100  # exempelvärde
+# Simulerad effektavgift (kan anpassas)
+effektavgift = max(förbrukning) * 100
 
-# ✅ Skapa DataFrame
-df = pd.DataFrame({
-    "Timme": timmar,
-    "Spotpris (öre/kWh)": spotpris,
-    "Förbrukning (kWh)": förbrukning,
-    "Solproduktion (kWh)": solproduktion,
-    "Beräknad kostnad (öre)": kostnad_per_timme
-})
-
-
-
-st.title("🔌 Anderssons Elprisanalys med Solproduktion")
-
-# Välj elnätsbolag
-nätbolag = st.selectbox("Välj elnätsbolag", ["Fortum", "Ellevio"])
-
-# Sätt fast avgift beroende på val
-if nätbolag == "Fortum":
-    fast_avgift = 15  # öre/kWh
-else:
-    fast_avgift = 25  # öre/kWh
-
-# Simulerade data
-timmar = list(range(24))
-spotpris = np.random.uniform(30, 80, size=24)
-förbrukning = np.random.uniform(0.5, 2.0, size=24)
-solproduktion = [0]*6 + list(np.random.uniform(0.2, 1.5, size=10)) + [0]*8
-
-# Kostnadsberäkning
-# Konvertera alla listor till float arrays för att undvika datatypfel
-spotpris = np.array(spotpris, dtype=float)
-förbrukning = np.array(förbrukning, dtype=float)
-solproduktion = np.array(solproduktion, dtype=float)
-
-# Kostnadsberäkning
-kostnad_per_timme = ((spotpris + fast_avgift) * förbrukning) - (solproduktion * 80)
-
-
-# Kontrollera att alla listor har samma längd
+# Skapa DataFrame
 if len(spotpris) == len(förbrukning) == len(solproduktion) == len(timmar):
     df = pd.DataFrame({
         "Timme": timmar,
@@ -119,8 +82,16 @@ st.dataframe(df.style.format({
     "Beräknad kostnad (öre)": "{:.0f}"
 }))
 
-# Effektavgiftssimulering
-effektavgift = max(förbrukning) * 20  # Exempelvärde för simulering
+# Visualisering: Timmar med lägst kostnad
+st.subheader("⏱️ Timmar med lägst kostnad")
+min_kostnad_idx = df["Beräknad kostnad (öre)"].nsmallest(3).index
+st.write("**Top 3 billigaste timmarna att använda el:**")
+st.table(df.loc[min_kostnad_idx, ["Timme", "Beräknad kostnad (öre)"]].reset_index(drop=True))
+
+# Besparing från solproduktion
+total_besparing = sum([produktion * 80 for produktion in solproduktion])
+st.subheader("💸 Besparing från solenergi")
+st.markdown(f"Du har sparat **{total_besparing:.0f} öre ({total_besparing/100:.2f} kr)** tack vare dina solpaneler idag.")
 
 st.markdown("---")
 st.markdown(f"💡 **Simulerad effektavgift:** {effektavgift:.2f} kr (baserat på maxförbrukning)")
